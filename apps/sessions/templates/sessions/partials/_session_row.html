@@ -1,0 +1,72 @@
+<tr id="session-row-{{ session.pk }}" class="session-row">
+  <td>
+    <span class="session-label">{{ session.label }}</span>
+  </td>
+  <td>
+    {% if session.status == 'active' %}
+      <span class="badge badge--active">
+        <span class="badge__dot badge__dot--pulse"></span>
+        Active
+      </span>
+    {% elif session.status == 'completed' %}
+      <span class="badge badge--completed">Completed</span>
+    {% else %}
+      <span class="badge badge--idle">Idle</span>
+    {% endif %}
+  </td>
+  <td class="text-muted text-sm">
+    {% if session.started_at %}
+      {{ session.started_at|date:"M j, g:i A" }}
+    {% else %}
+      —
+    {% endif %}
+  </td>
+  <td class="text-muted text-sm">
+    {% if session.stopped_at %}
+      {{ session.stopped_at|date:"M j, g:i A" }}
+    {% else %}
+      —
+    {% endif %}
+  </td>
+  <td class="fw-medium">
+    {% if session.status == 'completed' %}
+      {{ session.duration_formatted }}
+    {% elif session.status == 'active' %}
+      <span class="text-accent">Running…</span>
+    {% else %}
+      —
+    {% endif %}
+  </td>
+  <td>
+    <div class="action-group">
+      {% if session.status == 'idle' %}
+        <button
+          class="btn btn--sm btn--primary"
+          hx-post="{% url 'sessions:start_session' session.pk %}"
+          hx-target="#session-row-{{ session.pk }}"
+          hx-swap="outerHTML"
+        >
+          Start
+        </button>
+      {% elif session.status == 'active' %}
+        <button
+          class="btn btn--sm btn--warning"
+          hx-post="{% url 'sessions:stop_session' session.pk %}"
+          hx-target="#session-row-{{ session.pk }}"
+          hx-swap="outerHTML"
+        >
+          Stop
+        </button>
+      {% endif %}
+      <button
+        class="btn btn--sm btn--ghost btn--danger-hover"
+        hx-post="{% url 'sessions:delete_session' session.pk %}"
+        hx-target="#session-row-{{ session.pk }}"
+        hx-swap="outerHTML swap:0.25s"
+        hx-confirm="Delete '{{ session.label }}'? This cannot be undone."
+      >
+        Delete
+      </button>
+    </div>
+  </td>
+</tr>

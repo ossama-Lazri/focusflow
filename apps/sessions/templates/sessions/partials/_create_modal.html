@@ -1,0 +1,102 @@
+<!-- AlpineJS Modal: Create Session -->
+<div
+  x-data="createModal()"
+  x-on:open-create-modal.window="open()"
+  x-on:keydown.escape.window="close()"
+>
+  <!-- Backdrop -->
+  <div
+    class="modal-backdrop"
+    x-show="isOpen"
+    x-transition:enter="modal-backdrop-enter"
+    x-transition:enter-start="modal-backdrop-enter-start"
+    x-transition:enter-end="modal-backdrop-enter-end"
+    x-transition:leave="modal-backdrop-leave"
+    x-transition:leave-start="modal-backdrop-leave-start"
+    x-transition:leave-end="modal-backdrop-leave-end"
+    @click="close()"
+    style="display:none;"
+  ></div>
+
+  <!-- Modal Panel -->
+  <div
+    class="modal-wrapper"
+    x-show="isOpen"
+    x-transition:enter="modal-enter"
+    x-transition:enter-start="modal-enter-start"
+    x-transition:enter-end="modal-enter-end"
+    x-transition:leave="modal-leave"
+    x-transition:leave-start="modal-leave-start"
+    x-transition:leave-end="modal-leave-end"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    style="display:none;"
+  >
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">New Focus Session</h2>
+        <button class="modal__close" @click="close()" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form
+        hx-post="{% url 'sessions:create_session' %}"
+        hx-push-url="true"
+        @submit="handleSubmit($el)"
+      >
+        {% csrf_token %}
+        <div class="modal__body">
+          <div class="form-group">
+            <label for="session-label" class="form-label">Session Label</label>
+            <input
+              type="text"
+              id="session-label"
+              name="label"
+              class="form-input"
+              placeholder="e.g. Deep work: Q4 Report, Design review…"
+              maxlength="255"
+              autocomplete="off"
+              x-ref="labelInput"
+              required
+            />
+            <p class="form-hint">Give this session a meaningful name so you can track it later.</p>
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button type="button" class="btn btn--ghost" @click="close()">Cancel</button>
+          <button type="submit" class="btn btn--primary" :disabled="loading" x-text="loading ? 'Creating…' : 'Create Session'">
+            Create Session
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function createModal() {
+    return {
+      isOpen: false,
+      loading: false,
+      open() {
+        this.isOpen = true;
+        this.$nextTick(() => {
+          if (this.$refs.labelInput) this.$refs.labelInput.focus();
+        });
+      },
+      close() {
+        this.isOpen = false;
+        this.loading = false;
+      },
+      handleSubmit(form) {
+        this.loading = true;
+      },
+    };
+  }
+</script>

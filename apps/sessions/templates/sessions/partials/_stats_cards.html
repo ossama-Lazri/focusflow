@@ -1,0 +1,40 @@
+<div class="stat-cards">
+  <div class="stat-card">
+    <div class="stat-card__icon stat-card__icon--indigo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    </div>
+    <div class="stat-card__content">
+      <p class="stat-card__label">Sessions Today</p>
+      <p class="stat-card__value">{{ stats.session_count }}</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card__icon stat-card__icon--green">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <div class="stat-card__content">
+      <p class="stat-card__label">Focus Time</p>
+      <p class="stat-card__value">
+        {% if stats.total_formatted %}{{ stats.total_formatted }}{% else %}—{% endif %}
+      </p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card__icon stat-card__icon--amber">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </div>
+    <div class="stat-card__content">
+      <p class="stat-card__label">Active Now</p>
+      <p class="stat-card__value">{{ stats.active_count }}</p>
+    </div>
+  </div>
+</div>

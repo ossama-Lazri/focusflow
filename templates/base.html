@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <title>{% block title %}{% if page_title %}{{ page_title }} — FocusFlow{% else %}FocusFlow{% endif %}{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body x-data="{ sidebarOpen: false }" @keydown.escape.window="sidebarOpen = false">
+
+  <!-- ================================================================
+       MOBILE TOPBAR (hidden on desktop)
+  ================================================================ -->
+  <header class="mobile-topbar">
+    <button
+      class="mobile-topbar__hamburger"
+      @click="sidebarOpen = !sidebarOpen"
+      :aria-expanded="sidebarOpen"
+      aria-label="Toggle navigation"
+    >
+      <span class="hamburger-line" :class="{ 'hamburger-line--top-open': sidebarOpen }"></span>
+      <span class="hamburger-line" :class="{ 'hamburger-line--mid-open': sidebarOpen }"></span>
+      <span class="hamburger-line" :class="{ 'hamburger-line--bot-open': sidebarOpen }"></span>
+    </button>
+
+    <a href="{% url 'sessions:dashboard' %}" class="mobile-topbar__logo">
+      <span class="logo-icon">⏱</span>
+      <span class="logo-text" style="color:#0F172A;">FocusFlow</span>
+    </a>
+
+    <button
+      class="mobile-topbar__new btn btn--primary btn--sm"
+      x-data
+      @click="$dispatch('open-create-modal')"
+      aria-label="New session"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      <span class="mobile-topbar__new-label">New</span>
+    </button>
+  </header>
+
+  <!-- ================================================================
+       SIDEBAR OVERLAY (mobile backdrop)
+  ================================================================ -->
+  <div
+    class="sidebar-overlay"
+    x-show="sidebarOpen"
+    x-transition:enter="sidebar-overlay-enter"
+    x-transition:enter-start="sidebar-overlay-enter-start"
+    x-transition:enter-end="sidebar-overlay-enter-end"
+    x-transition:leave="sidebar-overlay-leave"
+    x-transition:leave-start="sidebar-overlay-leave-start"
+    x-transition:leave-end="sidebar-overlay-leave-end"
+    @click="sidebarOpen = false"
+    style="display:none;"
+  ></div>
+
+  <div class="app-layout">
+
+    <!-- ================================================================
+         SIDEBAR
+    ================================================================ -->
+    <aside class="sidebar" :class="{ 'sidebar--open': sidebarOpen }">
+      <div class="sidebar__inner">
+
+        <div class="sidebar__logo">
+          <a href="{% url 'sessions:dashboard' %}" class="logo-link" @click="sidebarOpen = false">
+            <span class="logo-icon">⏱</span>
+            <span class="logo-text">FocusFlow</span>
+          </a>
+        </div>
+
+        <nav class="sidebar__nav">
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="{% url 'sessions:dashboard' %}"
+                 class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}nav-link--active{% endif %}"
+                 @click="sidebarOpen = false">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'sessions:history' %}"
+                 class="nav-link {% if request.resolver_match.url_name == 'history' %}nav-link--active{% endif %}"
+                 @click="sidebarOpen = false">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>History</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'sessions:statistics' %}"
+                 class="nav-link {% if request.resolver_match.url_name == 'statistics' %}nav-link--active{% endif %}"
+                 @click="sidebarOpen = false">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span>Statistics</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="sidebar__footer">
+          <button
+            class="btn btn--accent btn--full"
+            x-data
+            @click="$dispatch('open-create-modal'); sidebarOpen = false"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New Session
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ================================================================
+         MAIN CONTENT
+    ================================================================ -->
+    <main class="main-content">
+      <div class="content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+  </div><!-- /.app-layout -->
+
+  {% include 'sessions/partials/_create_modal.html' %}
+
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

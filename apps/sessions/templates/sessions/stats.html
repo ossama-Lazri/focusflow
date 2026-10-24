@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">Statistics</h1>
+    <p class="page-subtitle">Your focus trends over time</p>
+  </div>
+</div>
+
+<!-- ====================================================================
+     TODAY'S STATS
+==================================================================== -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">Today</h2>
+    <span class="section-badge">{{ daily_stats.date|date:"F j, Y" }}</span>
+  </div>
+  {% include 'sessions/partials/_stats_cards.html' with stats=daily_stats %}
+</section>
+
+<!-- ====================================================================
+     WEEKLY OVERVIEW
+==================================================================== -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">This Week</h2>
+    <span class="section-meta">{{ weekly_stats.total_sessions }} sessions · {{ weekly_stats.total_formatted }} total</span>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="card chart-card">
+    <div class="bar-chart">
+      {% for day in weekly_stats.days %}
+      <div class="bar-chart__column {% if day.is_today %}bar-chart__column--today{% endif %}">
+        <div class="bar-chart__label-top">
+          {% if day.total_seconds > 0 %}
+            <span class="bar-chart__duration">{{ day.total_formatted }}</span>
+          {% endif %}
+        </div>
+        <div class="bar-chart__bar-wrap">
+          <div
+            class="bar-chart__bar {% if day.is_today %}bar-chart__bar--today{% endif %}"
+            style="height: {% if day.bar_pct > 0 %}{{ day.bar_pct }}{% else %}2{% endif %}%;"
+            title="{{ day.day_label }}: {{ day.total_formatted }}"
+          ></div>
+        </div>
+        <div class="bar-chart__label-bottom">
+          <span class="bar-chart__day">{{ day.day_name }}</span>
+          <span class="bar-chart__date">{{ day.date|date:"j" }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Per-day breakdown table -->
+  <div class="card" style="margin-top:1rem;">
+    <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Sessions</th>
+          <th>Focus Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for day in weekly_stats.days %}
+        <tr {% if day.is_today %}class="table__row--highlight"{% endif %}>
+          <td>
+            <span class="fw-medium">{{ day.day_name }}</span>
+            <span class="text-muted" style="margin-left:0.5rem;font-size:0.8125rem;">{{ day.date|date:"M j" }}</span>
+            {% if day.is_today %}<span class="badge badge--accent" style="margin-left:0.5rem;">Today</span>{% endif %}
+          </td>
+          <td>{{ day.session_count }}</td>
+          <td class="fw-medium">{{ day.total_formatted }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
