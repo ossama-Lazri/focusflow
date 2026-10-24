@@ -1,34 +1,55 @@
 # FocusFlow
 
-Track focused work sessions. Built with Django, HTMX, and AlpineJS.
-
-## Setup (WSL)
-
-```bash
-# Navigate to the project — adjust the path to match your Windows mount
-cd /mnt/c/Users/ossam/OneDrive/Documents/side-projects/focusflow
-
-# Create and activate a virtual environment
-python3 -m venv focusflow-venv
-source focusflow-venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy env file and set a secret key
-cp .env.example .env
-
-# Run migrations
-python manage.py migrate
-
-# Start the dev server
-python manage.py runserver
-```
-
-Open **http://127.0.0.1:8000/**
+A production-grade focus session tracker built with Django 5, HTMX, and AlpineJS. Sessions are created, started, and stopped via partial-page HTMX requests with a live 1-second polling timer. No JavaScript framework required beyond Alpine for modal state.
 
 ## Stack
 
-- Django 5 · Django REST Framework · django-htmx
-- HTMX 2 · AlpineJS 3 · Vanilla CSS
-- SQLite
+| Layer | Technology |
+|---|---|
+| Runtime | Python 3.12, Django 5.x |
+| Frontend | HTMX 2.x, AlpineJS 3.x, vanilla CSS |
+| API layer | Django REST Framework (throttled) |
+| Reverse proxy | Nginx 1.27 |
+| Container | Docker (multi-stage, non-root) |
+| Database | SQLite (volume-mounted) |
+| CI | GitHub Actions |
+
+## Quick Start
+
+```bash
+cp .env.example .env   # edit SECRET_KEY and CSRF_TRUSTED_ORIGINS
+docker compose up --build
+```
+
+Application: `http://localhost:8080`
+Health check: `http://localhost:8080/health/`
+
+## Project Layout
+
+```
+apps/
+  core/         health endpoint, 404/500 handlers, root redirect
+  sessions/     FocusSession model, services, views, HTMX partials
+config/
+  settings/     base / development / production
+  urls.py
+nginx/          nginx.conf, default.conf
+tests/          pytest suite (160 tests, 98% coverage)
+.github/
+  workflows/
+    ci.yml      lint → test + security → docker build
+```
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [Architecture](docs/architecture.md) | System design, data model, request lifecycle |
+| [Development](docs/development.md) | Local setup, tooling, conventions |
+| [Testing](docs/testing.md) | Test strategy, coverage, running the suite |
+| [Deployment](docs/deployment.md) | Docker, env vars, production checklist |
+
+## CI Status
+
+Pipeline: lint → test (parallel with security) → docker build.
+All four jobs must pass before merge to `develop`.
