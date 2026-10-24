@@ -3,17 +3,19 @@ from django.utils import timezone
 
 
 class FocusSession(models.Model):
-    STATUS_IDLE = 'idle'
-    STATUS_ACTIVE = 'active'
-    STATUS_COMPLETED = 'completed'
+    STATUS_IDLE = "idle"
+    STATUS_ACTIVE = "active"
+    STATUS_COMPLETED = "completed"
     STATUS_CHOICES = [
-        ('idle', 'Idle'),
-        ('active', 'Active'),
-        ('completed', 'Completed'),
+        ("idle", "Idle"),
+        ("active", "Active"),
+        ("completed", "Completed"),
     ]
 
     label = models.CharField(max_length=255)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_IDLE)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_IDLE
+    )
     started_at = models.DateTimeField(null=True, blank=True)
     stopped_at = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.IntegerField(default=0)
@@ -21,9 +23,9 @@ class FocusSession(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Focus Session'
-        verbose_name_plural = 'Focus Sessions'
+        ordering = ["-created_at"]
+        verbose_name = "Focus Session"
+        verbose_name_plural = "Focus Sessions"
 
     def __str__(self):
         return f"{self.label} ({self.status})"
