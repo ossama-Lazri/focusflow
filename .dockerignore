@@ -1,0 +1,17 @@
+focusflow-venv/
+.env
+db.sqlite3
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+tests/
+pytest.ini
+requirements-dev.txt
+staticfiles/
+htmlcov/
+.coverage
+.pytest_cache/
+*.md
+.env.example
