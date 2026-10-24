@@ -10,18 +10,22 @@ def _no_content(request):
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('favicon.ico', _no_content),
-    path('', include('apps.core.urls')),
-    path('', include('apps.sessions.urls')),
+    path("admin/", admin.site.urls),
+    path("favicon.ico", _no_content),
+    path("", include("apps.core.urls")),
+    path("", include("apps.sessions.urls")),
 ]
 
 if settings.DEBUG:
     urlpatterns += [
-        path('.well-known/appspecific/com.chrome.devtools.json',
-             lambda r: JsonResponse({"workspace": {"root": "", "uuid": "focusflow-dev"}})),
+        path(
+            ".well-known/appspecific/com.chrome.devtools.json",
+            lambda r: JsonResponse(
+                {"workspace": {"root": "", "uuid": "focusflow-dev"}}
+            ),
+        ),
     ]
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-handler404 = 'apps.core.views.handler404'
-handler500 = 'apps.core.views.handler500'
+handler404 = "apps.core.views.handler404"
+handler500 = "apps.core.views.handler500"

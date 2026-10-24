@@ -6,13 +6,13 @@ from apps.sessions.models import FocusSession
 
 @pytest.fixture
 def idle_session(db):
-    return FocusSession.objects.create(label='Deep work: feature planning')
+    return FocusSession.objects.create(label="Deep work: feature planning")
 
 
 @pytest.fixture
 def active_session(db):
     return FocusSession.objects.create(
-        label='Active: code review',
+        label="Active: code review",
         status=FocusSession.STATUS_ACTIVE,
         started_at=timezone.now() - timedelta(minutes=30),
     )
@@ -22,7 +22,7 @@ def active_session(db):
 def completed_session(db):
     now = timezone.now()
     return FocusSession.objects.create(
-        label='Completed: design sprint',
+        label="Completed: design sprint",
         status=FocusSession.STATUS_COMPLETED,
         started_at=now - timedelta(hours=1, minutes=30),
         stopped_at=now,
@@ -32,13 +32,21 @@ def completed_session(db):
 
 @pytest.fixture
 def htmx_headers():
-    return {'HTTP_HX_REQUEST': 'true', 'HTTP_HX_CURRENT_URL': 'http://testserver/dashboard/'}
+    return {
+        "HTTP_HX_REQUEST": "true",
+        "HTTP_HX_CURRENT_URL": "http://testserver/dashboard/",
+    }
 
 
 @pytest.fixture
 def session_factory(db):
-    def _factory(label='Session', status=FocusSession.STATUS_IDLE, duration_seconds=0,
-                 started_at=None, stopped_at=None):
+    def _factory(
+        label="Session",
+        status=FocusSession.STATUS_IDLE,
+        duration_seconds=0,
+        started_at=None,
+        stopped_at=None,
+    ):
         return FocusSession.objects.create(
             label=label,
             status=status,
@@ -46,4 +54,5 @@ def session_factory(db):
             started_at=started_at,
             stopped_at=stopped_at,
         )
+
     return _factory
