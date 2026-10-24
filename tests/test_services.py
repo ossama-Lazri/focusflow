@@ -1,5 +1,5 @@
 import pytest
-from datetime import timedelta, date
+from datetime import timedelta
 from django.utils import timezone
 from apps.sessions.models import FocusSession
 from apps.sessions import services

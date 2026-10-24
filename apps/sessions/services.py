@@ -3,9 +3,9 @@ Business logic services for FocusSession operations.
 All database mutations go through here — views stay thin.
 """
 
-from datetime import date, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum
 
 from .models import FocusSession
 

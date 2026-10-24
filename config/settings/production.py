@@ -1,6 +1,6 @@
 from pathlib import Path
 from decouple import config, Csv
-from .base import *  # noqa: F401, F403
+from .base import *  # noqa: F401, F403, F405
 
 DEBUG = False
 
