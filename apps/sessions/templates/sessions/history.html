@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">History</h1>
+    <p class="page-subtitle">All your focus sessions, in one place</p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="card">
+    {% if sessions %}
+      <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Stopped</th>
+            <th>Duration</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for session in sessions %}
+            {% include 'sessions/partials/_session_row.html' with session=session %}
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if page_obj.has_other_pages %}
+      <div class="pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}" class="pagination__btn">
+            ← Previous
+          </a>
+        {% endif %}
+
+        <span class="pagination__info">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" class="pagination__btn">
+            Next →
+          </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    {% else %}
+      {% include 'sessions/partials/_empty_state.html' %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

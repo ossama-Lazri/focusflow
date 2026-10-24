@@ -1,0 +1,25 @@
+<div class="empty-state">
+  <div class="empty-state__icon">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="40" r="36" fill="#EEF2FF" />
+      <circle cx="40" cy="40" r="20" stroke="#6366F1" stroke-width="2.5" fill="none"/>
+      <polyline points="40 28 40 40 47 45" stroke="#6366F1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h3 class="empty-state__title">No sessions yet</h3>
+  <p class="empty-state__description">
+    Start tracking your focus time by creating your first session.<br />
+    Every great sprint starts with a single focus block.
+  </p>
+  <button
+    class="btn btn--primary"
+    x-data
+    @click="$dispatch('open-create-modal')"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Create your first session
+  </button>
+</div>

@@ -1,0 +1,35 @@
+{% if session.status == 'active' %}
+<div
+  class="active-panel"
+  id="active-timer-{{ session.pk }}"
+  hx-get="{% url 'sessions:session_timer' session.pk %}"
+  hx-trigger="every 1s"
+  hx-swap="outerHTML"
+>
+  <div class="active-panel__indicator">
+    <span class="pulse-ring"></span>
+    <span class="pulse-dot"></span>
+  </div>
+  <div class="active-panel__info">
+    <p class="active-panel__label">{{ session.label }}</p>
+    <p class="active-panel__meta">Focus session in progress</p>
+  </div>
+  <div class="active-panel__timer">
+    <span class="timer-display">{{ session.elapsed_formatted }}</span>
+  </div>
+  <div class="active-panel__actions">
+    <button
+      class="btn btn--warning"
+      hx-post="{% url 'sessions:stop_session' session.pk %}"
+      hx-target="#active-session-panel"
+      hx-swap="innerHTML"
+      hx-trigger="click"
+    >
+      <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;">
+        <rect x="6" y="6" width="12" height="12" rx="1"/>
+      </svg>
+      Stop Session
+    </button>
+  </div>
+</div>
+{% endif %}
