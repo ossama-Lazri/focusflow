@@ -15,7 +15,8 @@ DATABASES = {
 INTERNAL_IPS = ["127.0.0.1"]
 
 SECRET_KEY = config(
-    "SECRET_KEY", default="django-insecure-dev-only-do-not-use-in-production-abc123xyz"
+    "SECRET_KEY",
+    default="django-insecure-dev-only-do-not-use-in-production-abc123xyz",
 )
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

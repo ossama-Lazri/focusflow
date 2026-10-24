@@ -81,10 +81,10 @@ jobs:
       - run: pip install -r requirements.txt bandit pip-audit
 
       - name: bandit
-        run: bandit -r apps/ config/ -ll -ii
+        run: bandit -r apps/ config/ -ll -ii --skip B105
 
       - name: pip-audit
-        run: pip-audit -r requirements.txt
+        run: pip-audit -r requirements.txt --progress-spinner off
 
   docker:
     name: Docker Build

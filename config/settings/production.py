@@ -1,6 +1,8 @@
 from pathlib import Path
-from decouple import config, Csv
-from .base import *  # noqa: F401, F403, F405
+
+from decouple import Csv, config
+
+from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
@@ -9,7 +11,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))),  # noqa: F405
+        "NAME": Path(config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))),
         "CONN_MAX_AGE": 60,
         "OPTIONS": {
             "timeout": 20,
@@ -30,7 +32,7 @@ MIDDLEWARE = [
 ]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", cast=Csv())
 
@@ -54,7 +56,10 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "json": {
-            "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
+            "format": (
+                '{"time": "%(asctime)s", "level": "%(levelname)s",'
+                ' "logger": "%(name)s", "message": "%(message)s"}'
+            ),
         },
     },
     "handlers": {
