@@ -1,0 +1,12 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E501, W503, W504
+exclude =
+    apps/sessions/migrations/,
+    focusflow-venv/,
+    staticfiles/,
+    htmlcov/,
+    .git/,
+    __pycache__/
+per-file-ignores =
+    config/settings/*.py: F401, F403, F405

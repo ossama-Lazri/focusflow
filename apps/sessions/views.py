@@ -76,7 +76,7 @@ def create_session(request):
         messages.error(request, "Session label cannot be empty.")
         return redirect("sessions:dashboard")
 
-    session = services.create_session(label)
+    services.create_session(label)
 
     if request.htmx:
         response = HttpResponse()

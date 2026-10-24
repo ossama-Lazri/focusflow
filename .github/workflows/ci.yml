@@ -27,11 +27,7 @@ jobs:
         run: black --check apps/ config/ tests/
 
       - name: flake8
-        run: |
-          flake8 apps/ config/ tests/ \
-            --max-line-length=88 \
-            --extend-ignore=E501,W503,W504 \
-            --exclude=apps/sessions/migrations/
+        run: flake8 apps/ config/ tests/
 
   test:
     name: Test

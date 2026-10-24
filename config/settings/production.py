@@ -9,9 +9,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": Path(
-            config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))
-        ),  # noqa: F405
+        "NAME": Path(config("DATABASE_PATH", default=str(BASE_DIR / "db.sqlite3"))),  # noqa: F405
         "CONN_MAX_AGE": 60,
         "OPTIONS": {
             "timeout": 20,
