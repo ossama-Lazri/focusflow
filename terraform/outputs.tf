@@ -47,3 +47,19 @@ output "iam_instance_profile_name" {
   description = "FocusFlow IAM instance profile name"
   value       = module.iam_app.instance_profile_name
 }
+
+output "deployment_user_name" {
+  description = "FocusFlow deployment IAM user name"
+  value       = module.iam_app.deployment_user_name
+}
+
+output "deployment_access_key_id" {
+  description = "FocusFlow deployment IAM access key ID"
+  value       = module.iam_app.deployment_access_key_id
+}
+
+output "deployment_secret_access_key" {
+  description = "FocusFlow deployment IAM secret access key"
+  value       = module.iam_app.deployment_secret_access_key
+  sensitive   = true
+}

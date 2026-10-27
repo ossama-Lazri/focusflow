@@ -19,6 +19,12 @@ variable "log_group_arn" {
   default     = "*"
 }
 
+variable "deployer_user_name" {
+  description = "Name of the CI/CD deployment IAM user"
+  type        = string
+  default     = "focusflow-deployer"
+}
+
 variable "tags" {
   description = "Resource tags"
   type        = map(string)
