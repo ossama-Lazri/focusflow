@@ -1,3 +1,13 @@
+output "s3_artifacts_bucket_name" {
+  description = "FocusFlow artifacts S3 bucket name"
+  value       = module.s3_artifacts.bucket_name
+}
+
+output "s3_artifacts_bucket_arn" {
+  description = "FocusFlow artifacts S3 bucket ARN"
+  value       = module.s3_artifacts.bucket_arn
+}
+
 output "s3_media_bucket_name" {
   description = "FocusFlow media S3 bucket name"
   value       = module.s3_media.bucket_id

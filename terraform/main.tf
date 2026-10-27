@@ -25,6 +25,20 @@ module "s3_backups" {
   force_destroy     = true
 }
 
+module "s3_artifacts" {
+  source = "./modules/s3"
+
+  bucket_name       = "focusflow-artifacts"
+  environment       = var.environment
+  enable_versioning = true
+  force_destroy     = true
+
+  tags = {
+    Purpose   = "artifacts"
+    ManagedBy = "terraform"
+  }
+}
+
 module "iam_app" {
   source = "./modules/iam"
 
@@ -33,6 +47,7 @@ module "iam_app" {
   s3_bucket_arns = [
     module.s3_media.bucket_arn,
     module.s3_static.bucket_arn,
-    module.s3_backups.bucket_arn
+    module.s3_backups.bucket_arn,
+    module.s3_artifacts.bucket_arn
   ]
 }
