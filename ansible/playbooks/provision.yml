@@ -1,0 +1,7 @@
+---
+- name: Provision Host Infrastructure and Dependencies
+  hosts: webservers
+  become: true
+  roles:
+    - common
+    - docker

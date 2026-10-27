@@ -1,0 +1,15 @@
+environment_name: "local"
+app_user: "appuser"
+app_group: "appuser"
+app_dir: "/opt/focusflow"
+app_port: 8080
+
+django_secret_key: "local-dev-secret-key-change-in-production-xj9k2m"
+django_allowed_hosts: "localhost,127.0.0.1"
+django_csrf_trusted_origins: "http://localhost:8080,http://127.0.0.1:8080"
+django_secure_ssl_redirect: "False"
+django_secure_hsts_seconds: "0"
+django_session_cookie_secure: "False"
+django_csrf_cookie_secure: "False"
+django_log_level: "INFO"
+django_database_path: "/app/data/db.sqlite3"

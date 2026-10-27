@@ -1,0 +1,74 @@
+---
+- name: Create application directory hierarchy
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0755"
+  loop:
+    - "{{ app_dir }}"
+    - "{{ app_data_dir }}"
+    - "{{ app_staticfiles_dir }}"
+    - "{{ app_nginx_dir }}"
+
+- name: Deploy application environment configuration
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0600"
+  notify: Restart FocusFlow
+
+- name: Deploy Docker Compose configuration
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ app_dir }}/docker-compose.yml"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0644"
+  notify: Restart FocusFlow
+
+- name: Sync Nginx reverse proxy configuration
+  ansible.builtin.copy:
+    src: "{{ app_source_dir }}/nginx/"
+    dest: "{{ app_nginx_dir }}/"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: "0644"
+  notify: Restart FocusFlow
+
+- name: Sync application source for build context
+  ansible.builtin.copy:
+    src: "{{ app_source_dir }}/{{ item }}"
+    dest: "{{ app_dir }}/{{ item }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_group }}"
+    mode: preserve
+  loop:
+    - "apps"
+    - "config"
+    - "templates"
+    - "static"
+    - "manage.py"
+    - "Dockerfile"
+    - "entrypoint.sh"
+    - "requirements.txt"
+  when: app_source_dir is defined
+
+- name: Start FocusFlow Docker Compose services
+  ansible.builtin.command:
+    cmd: docker compose up -d --build
+    chdir: "{{ app_dir }}"
+  register: compose_up
+  changed_when: "'Creating' in compose_up.stdout or 'Recreating' in compose_up.stdout or 'Starting' in compose_up.stdout"
+
+- name: Wait for FocusFlow application health endpoint
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/health/"
+    status_code: 200
+  register: health_status
+  until: health_status.status == 200
+  retries: "{{ healthcheck_retries }}"
+  delay: "{{ healthcheck_delay }}"

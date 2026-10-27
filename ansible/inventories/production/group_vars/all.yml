@@ -1,0 +1,15 @@
+environment_name: "production"
+app_user: "appuser"
+app_group: "appuser"
+app_dir: "/opt/focusflow"
+app_port: 80
+
+django_secret_key: "{{ vault_django_secret_key | default('change-me-via-vault') }}"
+django_allowed_hosts: "focusflow.io,www.focusflow.io"
+django_csrf_trusted_origins: "https://focusflow.io,https://www.focusflow.io"
+django_secure_ssl_redirect: "True"
+django_secure_hsts_seconds: "31536000"
+django_session_cookie_secure: "True"
+django_csrf_cookie_secure: "True"
+django_log_level: "WARNING"
+django_database_path: "/app/data/db.sqlite3"

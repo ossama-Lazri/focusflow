@@ -67,3 +67,7 @@ terraform/environments/local/terraform.tfvars
 
 # LocalStack persistence
 localstack/.localstack/
+
+# Ansible
+*.retry
+.ansible/

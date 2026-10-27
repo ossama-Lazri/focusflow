@@ -1,0 +1,6 @@
+---
+- name: Deploy FocusFlow Application and Environment
+  hosts: webservers
+  become: true
+  roles:
+    - app
