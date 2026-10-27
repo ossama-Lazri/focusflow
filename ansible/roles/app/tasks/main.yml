@@ -3,8 +3,8 @@
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: "{{ app_user | default(omit) }}"
+    group: "{{ app_group | default(omit) }}"
     mode: "0755"
   loop:
     - "{{ app_dir }}"
@@ -16,8 +16,8 @@
   ansible.builtin.template:
     src: .env.j2
     dest: "{{ app_dir }}/.env"
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: "{{ app_user | default(omit) }}"
+    group: "{{ app_group | default(omit) }}"
     mode: "0600"
   notify: Restart FocusFlow
 
@@ -25,8 +25,8 @@
   ansible.builtin.template:
     src: docker-compose.yml.j2
     dest: "{{ app_dir }}/docker-compose.yml"
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: "{{ app_user | default(omit) }}"
+    group: "{{ app_group | default(omit) }}"
     mode: "0644"
   notify: Restart FocusFlow
 
@@ -34,8 +34,8 @@
   ansible.builtin.copy:
     src: "{{ app_source_dir }}/nginx/"
     dest: "{{ app_nginx_dir }}/"
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: "{{ app_user | default(omit) }}"
+    group: "{{ app_group | default(omit) }}"
     mode: "0644"
   notify: Restart FocusFlow
 
@@ -43,8 +43,8 @@
   ansible.builtin.copy:
     src: "{{ app_source_dir }}/{{ item }}"
     dest: "{{ app_dir }}/{{ item }}"
-    owner: "{{ app_user }}"
-    group: "{{ app_group }}"
+    owner: "{{ app_user | default(omit) }}"
+    group: "{{ app_group | default(omit) }}"
     mode: preserve
   loop:
     - "apps"

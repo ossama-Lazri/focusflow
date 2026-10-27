@@ -1,8 +1,9 @@
 environment_name: "local"
-app_user: "appuser"
-app_group: "appuser"
-app_dir: "/opt/focusflow"
+app_user: "{{ lookup('env', 'USER') | default(omit) }}"
+app_group: "{{ lookup('env', 'USER') | default(omit) }}"
+app_dir: "/tmp/focusflow"
 app_port: 8080
+deploy_become: false
 
 django_secret_key: "local-dev-secret-key-change-in-production-xj9k2m"
 django_allowed_hosts: "localhost,127.0.0.1"

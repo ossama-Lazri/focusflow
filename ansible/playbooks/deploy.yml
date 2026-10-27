@@ -1,6 +1,6 @@
 ---
 - name: Deploy FocusFlow Application and Environment
   hosts: webservers
-  become: true
+  become: "{{ deploy_become | default(false) }}"
   roles:
     - app
