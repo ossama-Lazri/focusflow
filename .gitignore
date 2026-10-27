@@ -54,3 +54,16 @@ Thumbs.db
 
 # Static files (collected)
 staticfiles/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfstate.d/
+**/tfplan
+**/tfplan.out
+terraform/environments/local/terraform.tfvars
+
+# LocalStack persistence
+localstack/.localstack/
