@@ -63,6 +63,7 @@
     chdir: "{{ app_dir }}"
   register: compose_up
   changed_when: "'Creating' in compose_up.stdout or 'Recreating' in compose_up.stdout or 'Starting' in compose_up.stdout"
+  when: not ansible_check_mode
 
 - name: Wait for FocusFlow application health endpoint
   ansible.builtin.uri:
@@ -72,3 +73,4 @@
   until: health_status.status == 200
   retries: "{{ healthcheck_retries }}"
   delay: "{{ healthcheck_delay }}"
+  when: not ansible_check_mode
