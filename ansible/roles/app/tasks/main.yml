@@ -42,7 +42,7 @@
 - name: Sync application source for build context
   ansible.builtin.copy:
     src: "{{ app_source_dir }}/{{ item }}"
-    dest: "{{ app_dir }}/{{ item }}"
+    dest: "{{ app_dir }}/"
     owner: "{{ app_user | default(omit) }}"
     group: "{{ app_group | default(omit) }}"
     mode: preserve

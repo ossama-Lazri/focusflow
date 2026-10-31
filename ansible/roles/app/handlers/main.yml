@@ -4,3 +4,4 @@
     cmd: docker compose up -d --force-recreate
     chdir: "{{ app_dir }}"
   changed_when: true
+  when: not ansible_check_mode
