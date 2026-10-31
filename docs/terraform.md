@@ -1,76 +1,107 @@
-# FocusFlow Terraform Infrastructure Guide
+# Terraform Infrastructure
 
-## Overview
+## Architecture
 
-FocusFlow manages all cloud infrastructure as code (IaC) using modular Terraform. The configuration supports zero-cost local execution via LocalStack (AWS simulation) and direct production deployment on AWS.
-
-## Architecture & Modules
+FocusFlow infrastructure is provisioned via Terraform using a modular structure targeting AWS (production) or LocalStack (local). All resources are tagged with `Environment`, `Project`, and `ManagedBy` via provider-level `default_tags`.
 
 ```
 terraform/
-├── main.tf                     # Root module invoking S3 and IAM modules
-├── variables.tf                # Input variable definitions
-├── outputs.tf                  # Infrastructure outputs (buckets, ARNs, IAM keys)
-├── provider.tf                 # AWS provider with optional LocalStack endpoint overrides
-├── terraform.tfvars.example    # Example configuration values
-├── modules/
-│   ├── s3/                     # Reusable S3 bucket module
-│   │   ├── main.tf             # Bucket, encryption, versioning, public access block
-│   │   ├── variables.tf
-│   │   └── outputs.tf
-│   └── iam/                    # Least-privilege IAM roles and deployment user
-│       ├── main.tf             # App role, deployer user, access keys, policy attachments
-│       ├── variables.tf
-│       └── outputs.tf
-└── environments/
-    ├── local/                  # LocalStack-targeted environment
-    └── production/             # AWS-targeted environment
+├── provider.tf           # AWS provider + endpoint configuration
+├── variables.tf          # Input variables (environment, region, project_name)
+├── main.tf               # Root module — composes all child modules
+├── outputs.tf            # Exposes bucket names, ARNs, IAM identifiers
+├── terraform.tfvars      # Active variable values (not committed)
+├── terraform.tfvars.example
+└── modules/
+    ├── s3/               # Generic S3 bucket module
+    └── iam/              # IAM roles, policies, deployer user
 ```
 
-## Provisioned Resources
+## Module Structure
 
-### 1. S3 Storage Buckets
-- `focusflow-artifacts`: CI/CD build artifacts and deployment archives.
-- `focusflow-local-media`: User-uploaded assets.
-- `focusflow-local-static`: Compiled Django/Nginx static assets.
-- `focusflow-local-backups`: Automated SQLite database backups.
+### `modules/s3`
 
-Every bucket enforces:
-- AES256 server-side encryption.
-- S3 bucket versioning.
-- Public Access Block (`block_public_acls`, `block_public_policy`, `ignore_public_acls`, `restrict_public_buckets`).
+Provisions a single S3 bucket with:
 
-### 2. Identity and Access Management (IAM)
-- **Application Role (`FocusFlowAppRole`)**: EC2/Container assume-role with scoped S3 and CloudWatch Logs permissions.
-- **Application Instance Profile (`FocusFlowAppRoleInstanceProfile`)**: For EC2 instance attachment.
-- **Deployment User (`focusflow-deployer`)**: Programmatic CI/CD deployment user with least-privilege permissions to S3 and CloudWatch.
-- **Access Keys**: Programmatic AWS access key pair generated for deployment automation.
+| Resource | Purpose |
+|---|---|
+| `aws_s3_bucket` | Bucket with configurable `force_destroy` |
+| `aws_s3_bucket_versioning` | Enabled/Suspended via `enable_versioning` input |
+| `aws_s3_bucket_server_side_encryption_configuration` | AES256 SSE enforced on all buckets |
+| `aws_s3_bucket_public_access_block` | Public access fully blocked by default |
 
-## LocalStack vs AWS Execution
+Instantiated four times from root:
 
-### LocalStack Mode (Default)
-LocalStack executes on `http://localhost:4566`. `use_localstack = true` redirects all AWS API calls to the local container.
+| Instance | Bucket Name | Versioning |
+|---|---|---|
+| `s3_media` | `focusflow-{env}-media` | Enabled |
+| `s3_static` | `focusflow-{env}-static` | Disabled |
+| `s3_backups` | `focusflow-{env}-backups` | Enabled |
+| `s3_artifacts` | `focusflow-artifacts` | Enabled |
+
+### `modules/iam`
+
+Provisions the full IAM surface:
+
+| Resource | Name | Purpose |
+|---|---|---|
+| `aws_iam_role` | `FocusFlowAppRole` | EC2 instance role for application runtime |
+| `aws_iam_policy` | `FocusFlowAppRolePolicy` | Scoped S3 + CloudWatch Logs access |
+| `aws_iam_role_policy_attachment` | — | Binds policy to role |
+| `aws_iam_instance_profile` | `FocusFlowAppRoleInstanceProfile` | EC2 instance profile wrapper |
+| `aws_iam_user` | `focusflow-deployer` | CI/CD deploy identity |
+| `aws_iam_access_key` | — | Programmatic credentials for deployer |
+| `aws_iam_policy` | `focusflow-deployerPolicy` | Least-privilege deploy policy |
+
+Both the app role and deployer user are granted identical scoped permissions: `s3:{Get,Put,Delete,List}` on all FocusFlow buckets and `logs:{CreateLogStream,PutLogEvents,DescribeLogStreams}` on the application log group.
+
+## Deployment Workflow
 
 ```bash
-cd terraform
+cd terraform/
+
+# First-time initialization
 terraform init
+
+# Validate configuration
+terraform validate
+
+# Preview changes
 terraform plan
+
+# Apply
 terraform apply -auto-approve
 ```
 
-### AWS Production Mode
-Set `use_localstack = false` in `terraform.tfvars` or pass `-var="use_localstack=false"` to target real AWS resources with AWS credentials configured via environment variables or IAM role.
+For local development, the provider is pre-configured to route all API calls to LocalStack (`http://localhost:4566`). No credential configuration is required locally.
 
-## Outputs Reference
+For production, remove the `endpoints` override and supply real AWS credentials via environment variables or an instance profile.
 
-| Output Key | Description |
-|---|---|
-| `artifacts_bucket_name` | Name of the CI/CD artifacts S3 bucket |
-| `artifacts_bucket_arn` | ARN of the CI/CD artifacts S3 bucket |
-| `media_bucket_name` | Name of the media storage S3 bucket |
-| `static_bucket_name` | Name of the static assets S3 bucket |
-| `backups_bucket_name` | Name of the backups S3 bucket |
-| `app_role_arn` | IAM Role ARN for application runtime |
-| `deployment_user_name` | IAM username for deployment pipeline |
-| `deployment_access_key_id` | Access key ID for deployer user |
-| `deployment_secret_access_key` | Secret access key (sensitive) |
+## Operational Workflow
+
+### Inspect outputs
+```bash
+terraform output
+terraform output -json
+terraform output deployment_secret_access_key  # sensitive
+```
+
+### Targeted operations
+```bash
+terraform plan -target=module.s3_media
+terraform apply -target=module.iam_app
+```
+
+### State management
+```bash
+terraform state list
+terraform state show module.iam_app.aws_iam_role.app
+```
+
+### Destroy
+```bash
+terraform destroy -auto-approve   # local only
+# Production: remove -auto-approve, review plan output first
+```
+
+> **Note:** `force_destroy = true` is set on all buckets for development convenience. In production, this must be set to `false` and bucket deletion should require explicit state removal after content archival.

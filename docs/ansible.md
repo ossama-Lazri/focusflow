@@ -1,80 +1,110 @@
-# FocusFlow Ansible Automation Guide
+# Ansible Deployment
 
-## Overview
+## Architecture
 
-FocusFlow utilizes Ansible for automated host configuration, Docker environment provisioning, and reproducible application deployment across local, staging, and production environments.
-
-## Directory Layout
+Ansible manages the application deployment layer — environment configuration, Docker Compose orchestration, and service health verification. Infrastructure provisioning (IAM, S3) is handled by Terraform; Ansible operates exclusively on the application tier.
 
 ```
 ansible/
-├── ansible.cfg                    # Core Ansible runtime configuration
+├── ansible.cfg                          # stdout_callback=default, remote_tmp=/tmp/.ansible/tmp
 ├── inventories/
 │   ├── local/
-│   │   ├── hosts.yml              # Localhost connection target
-│   │   └── group_vars/
-│   │       └── all.yml            # Local environment variables
+│   │   ├── hosts.yml                    # connection: local, python: auto_silent
+│   │   └── group_vars/all.yml           # app_source_method: copy, deploy_become: false
 │   └── production/
-│       ├── hosts.yml              # Production server inventory
-│       └── group_vars/
-│           └── all.yml            # Production variables (templated / vaulted)
+│       ├── hosts.yml                    # SSH connection to web1.focusflow.io
+│       └── group_vars/all.yml           # app_source_method: git, deploy_become: true
 ├── playbooks/
-│   ├── site.yml                   # Master orchestration playbook
-│   ├── provision.yml              # Host provisioning (OS, users, Docker)
-│   └── deploy.yml                 # App deployment & health verification
+│   ├── site.yml                         # Full stack: provision + deploy
+│   ├── provision.yml                    # OS-level: common + docker roles
+│   └── deploy.yml                       # Application: app role only
 └── roles/
-    ├── common/                    # Baseline OS dependencies & app user
-    ├── docker/                    # Docker CE engine & Compose installation
-    └── app/                       # FocusFlow compose setup, env, and healthcheck
+    ├── common/                          # Base packages, system user
+    ├── docker/                          # Docker CE install, daemon config, systemd
+    └── app/                             # Application deployment pipeline
 ```
 
-## Roles Specification
+## Role Structure
 
-### 1. `common`
-- Updates apt package cache.
-- Installs prerequisite utilities (`curl`, `ca-certificates`, `gnupg`, `git`, `rsync`, `htop`).
-- Creates system group `appuser` and non-root system user `appuser`.
+### `roles/app`
 
-### 2. `docker`
-- Adds official Docker GPG key and APT repository.
-- Installs `docker-ce`, `docker-ce-cli`, `containerd.io`, and `docker-compose-plugin`.
-- Configures `/etc/docker/daemon.json` with log rotation (`max-size: 20m`, `max-file: 5`).
-- Enables and starts systemd service `docker`.
-- Adds `appuser` to the `docker` group.
+The `app` role is the core deployment unit. It executes a sequential pipeline:
 
-### 3. `app`
-- Creates application directories: `/opt/focusflow`, `/opt/focusflow/data`, `/opt/focusflow/logs`.
-- Deploys environment file (`.env`) from template with database, secret key, and host configurations.
-- Deploys production `docker-compose.yml`.
-- Synchronizes Nginx configuration and application build context.
-- Starts containers with `docker compose up -d --build`.
-- Verifies endpoint health via HTTP probe to `http://127.0.0.1:{{ app_port }}/health/`.
+| Task | Module | Condition |
+|---|---|---|
+| Create directory hierarchy | `file` | Always |
+| Deploy `.env` from template | `template` | Always |
+| Deploy `docker-compose.yml` from template | `template` | Always |
+| Sync Nginx configuration | `copy` | Always |
+| Install git + rsync | `package` | `deploy_become: true` |
+| Pull repository via git | `git` | `app_source_method: git` |
+| Sync source from local filesystem | `copy` | `app_source_method: copy` |
+| Start Docker Compose services | `command` | `not ansible_check_mode` |
+| Wait for health endpoint | `uri` | `not ansible_check_mode` |
 
-## Running Playbooks
+**Handler:** `Restart FocusFlow` — runs `docker compose up -d --force-recreate` on any notifying task change, skipped in `--check` mode.
 
-### Syntax Verification
+### Source Strategy (`app_source_method`)
+
+| Value | Mechanism | Use Case |
+|---|---|---|
+| `copy` | `ansible.builtin.copy` from `playbook_dir/../..` | Local development — no git required |
+| `git` | `ansible.builtin.git` with `depth: 1, force: true` | Production — pull from GitHub |
+
+### Key Variables (`roles/app/defaults/main.yml`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `app_repo_url` | GitHub URL | Repository to clone in git mode |
+| `app_version` | `main` | Branch or tag to deploy |
+| `app_source_method` | `git` | Source acquisition strategy |
+| `app_dir` | `/opt/focusflow` | Application root on target host |
+| `app_port` | `8080` | Port health check polls |
+| `healthcheck_retries` | `10` | Max retries for health endpoint |
+| `healthcheck_delay` | `3` | Seconds between retries |
+| `deploy_become` | (per-inventory) | Whether to use privilege escalation |
+
+## Deployment Workflow
+
 ```bash
-cd ansible
+cd ansible/
 export ANSIBLE_CONFIG=./ansible.cfg
-ansible-playbook --syntax-check -i inventories/local/hosts.yml playbooks/site.yml
-```
 
-### Inspect Tasks
-```bash
-ansible-playbook -i inventories/local/hosts.yml playbooks/site.yml --list-tasks
-```
+# Dry-run
+ansible-playbook -i inventories/local/hosts.yml playbooks/deploy.yml --check
 
-### Dry Run (Check Mode)
-```bash
-ansible-playbook -i inventories/local/hosts.yml playbooks/site.yml --check
-```
-
-### Execute Deployment Only
-```bash
+# Deploy
 ansible-playbook -i inventories/local/hosts.yml playbooks/deploy.yml
+
+# Production
+ansible-playbook -i inventories/production/hosts.yml playbooks/deploy.yml
 ```
 
-### Production Deployment
+All playbooks are idempotent. Re-running against an already-deployed environment produces `changed=0`.
+
+## Operational Workflow
+
+### List hosts
 ```bash
-ansible-playbook -i inventories/production/hosts.yml playbooks/site.yml --ask-vault-pass
+ansible-inventory -i inventories/local/hosts.yml --list
+```
+
+### Ad-hoc commands
+```bash
+# Check container status on target
+ansible localhost -i inventories/local/hosts.yml -m command -a "docker compose ps" --connection=local
+
+# Restart application
+ansible localhost -i inventories/local/hosts.yml -m command \
+  -a "docker compose -f /tmp/focusflow/docker-compose.yml up -d --force-recreate" --connection=local
+```
+
+### Run only specific tasks by tag
+```bash
+ansible-playbook -i inventories/local/hosts.yml playbooks/deploy.yml --tags "config"
+```
+
+### Verbose output
+```bash
+ansible-playbook -i inventories/local/hosts.yml playbooks/deploy.yml -vvv
 ```
