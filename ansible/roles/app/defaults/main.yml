@@ -1,0 +1,13 @@
+---
+app_repo_url: "https://github.com/ossama-Lazri/focusflow.git"
+app_version: "main"
+app_source_method: "git"
+app_source_dir: "{{ playbook_dir }}/../.."
+app_dir: "/opt/focusflow"
+app_data_dir: "{{ app_dir }}/data"
+app_staticfiles_dir: "{{ app_dir }}/staticfiles"
+app_nginx_dir: "{{ app_dir }}/nginx"
+app_port: 8080
+web_image_tag: "latest"
+healthcheck_retries: 10
+healthcheck_delay: 3
