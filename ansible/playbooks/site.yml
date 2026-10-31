@@ -1,0 +1,6 @@
+---
+- name: Orchestrate Host Provisioning
+  ansible.builtin.import_playbook: provision.yml
+
+- name: Orchestrate Application Deployment
+  ansible.builtin.import_playbook: deploy.yml
