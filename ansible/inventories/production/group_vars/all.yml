@@ -4,6 +4,8 @@ app_group: "appuser"
 app_dir: "/opt/focusflow"
 app_port: 80
 deploy_become: true
+app_source_method: "git"
+app_version: "main"
 
 django_secret_key: "{{ vault_django_secret_key | default('change-me-via-vault') }}"
 django_allowed_hosts: "focusflow.io,www.focusflow.io"

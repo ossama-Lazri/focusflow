@@ -1,4 +1,7 @@
 ---
+app_repo_url: "https://github.com/ossama-Lazri/focusflow.git"
+app_version: "main"
+app_source_method: "git"
 app_source_dir: "{{ playbook_dir }}/../.."
 app_dir: "/opt/focusflow"
 app_data_dir: "{{ app_dir }}/data"

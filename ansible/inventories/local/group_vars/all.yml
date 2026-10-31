@@ -4,6 +4,7 @@ app_group: "{{ lookup('env', 'USER') | default(omit) }}"
 app_dir: "/tmp/focusflow"
 app_port: 8080
 deploy_become: false
+app_source_method: "copy"
 
 django_secret_key: "local-dev-secret-key-change-in-production-xj9k2m"
 django_allowed_hosts: "localhost,127.0.0.1"

@@ -39,6 +39,25 @@
     mode: "0644"
   notify: Restart FocusFlow
 
+- name: Ensure deployment dependencies are installed
+  ansible.builtin.package:
+    name:
+      - git
+      - rsync
+    state: present
+  when: deploy_become | default(false)
+
+- name: Pull latest FocusFlow repository
+  ansible.builtin.git:
+    repo: "{{ app_repo_url }}"
+    dest: "{{ app_dir }}"
+    version: "{{ app_version | default('main') }}"
+    force: true
+    single_branch: true
+    depth: 1
+  when: app_source_method == "git"
+  notify: Restart FocusFlow
+
 - name: Sync application source for build context
   ansible.builtin.copy:
     src: "{{ app_source_dir }}/{{ item }}"
@@ -55,7 +74,8 @@
     - "Dockerfile"
     - "entrypoint.sh"
     - "requirements.txt"
-  when: app_source_dir is defined
+  when: app_source_method == "copy"
+  notify: Restart FocusFlow
 
 - name: Start FocusFlow Docker Compose services
   ansible.builtin.command:
