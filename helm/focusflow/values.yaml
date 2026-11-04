@@ -1,0 +1,105 @@
+replicaCount: 2
+
+image:
+  repository: focusflow-web
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/health/"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+env:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  ALLOWED_HOSTS: "localhost,127.0.0.1,focusflow.local,*.focusflow.local,*"
+  CSRF_TRUSTED_ORIGINS: "http://localhost:8080,http://localhost:9000,http://focusflow.local"
+  DATABASE_PATH: "/app/data/db.sqlite3"
+  PORT: "8000"
+  AWS_REGION: "us-east-1"
+  AWS_STORAGE_BUCKET_NAME: "focusflow-local-media"
+  AWS_S3_ENDPOINT_URL: "http://focusflow-localstack:4566"
+
+secrets:
+  SECRET_KEY: "django-insecure-k8s-platform-focusflow-production-secret-key-change-in-vault"
+  AWS_ACCESS_KEY_ID: "test"
+  AWS_SECRET_ACCESS_KEY: "test"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "15"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  hosts:
+    - host: focusflow.local
+      paths:
+        - path: /health/
+          pathType: Exact
+        - path: /
+          pathType: Prefix
+    - host: localhost
+      paths:
+        - path: /health/
+          pathType: Exact
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  startup:
+    path: /health/
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 12
+  readiness:
+    path: /health/
+    initialDelaySeconds: 2
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+  liveness:
+    path: /health/
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
