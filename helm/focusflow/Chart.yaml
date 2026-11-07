@@ -1,0 +1,8 @@
+apiVersion: v2
+name: focusflow
+description: Helm chart for FocusFlow SaaS application on Kubernetes
+type: application
+version: 0.3.0
+appVersion: "0.3.0"
+maintainers:
+  - name: Platform Team
