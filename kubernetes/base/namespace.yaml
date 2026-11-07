@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: focusflow
+  labels:
+    app.kubernetes.io/name: focusflow
+    app.kubernetes.io/part-of: focusflow-platform
