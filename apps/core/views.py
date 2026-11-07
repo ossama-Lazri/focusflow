@@ -20,11 +20,16 @@ def health(request):
 def metrics(request):
     """Prometheus exposition metrics endpoint."""
     total_sessions = FocusSession.objects.count()
-    active_sessions = FocusSession.objects.filter(status=FocusSession.STATUS_ACTIVE).count()
-    completed_sessions = FocusSession.objects.filter(status=FocusSession.STATUS_COMPLETED).count()
+    active_sessions = FocusSession.objects.filter(
+        status=FocusSession.STATUS_ACTIVE
+    ).count()
+    completed_sessions = FocusSession.objects.filter(
+        status=FocusSession.STATUS_COMPLETED
+    ).count()
     total_focus_seconds = (
-        FocusSession.objects.filter(status=FocusSession.STATUS_COMPLETED)
-        .aggregate(Sum("duration_seconds"))["duration_seconds__sum"]
+        FocusSession.objects.filter(status=FocusSession.STATUS_COMPLETED).aggregate(
+            Sum("duration_seconds")
+        )["duration_seconds__sum"]
         or 0
     )
     uptime_seconds = time.time() - _START_TIME
